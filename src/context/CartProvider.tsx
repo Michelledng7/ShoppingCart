@@ -1,3 +1,5 @@
+import { useReducer, useMemo, createContext, ReactElement } from 'react'
+
 export type CartItemType = {
 	sku: string
 	name: string
@@ -95,3 +97,56 @@ const reducer = (
 			throw new Error('Not a valid reducer action type')
 	}
 }
+
+const useCartContext = (initCartState: CartStateType) => {
+	const [state, dispatch] = useReducer(reducer, initCartState)
+
+	const REDUCER_ACTIONS = useMemo(() => {
+		return REDUCER_ACTION_TYPE
+	}, [])
+
+	const totalItems: number = state.cart.reduce((previousValue, cartItem) => {
+		return previousValue + cartItem.qty
+	}, 0)
+	const totalPrice = new Intl.NumberFormat('en-US', {
+		style: 'currency',
+		currency: 'AUS',
+	}).format(
+		state.cart.reduce((previousValue, cartItem) => {
+			return previousValue + cartItem.qty * cartItem.price
+		}, 0)
+	)
+
+	const cart = state.cart.sort((a, b) => {
+		const itemA = Number(a.sku.slice(-3))
+		const itemB = Number(b.sku.slice(-3))
+		return itemA - itemB
+	})
+
+	return { dispatch, REDUCER_ACTIONS, totalItems, totalPrice, cart }
+}
+
+export type useCartContextType = ReturnType<typeof useCartContext>
+
+const initCartContextState: useCartContextType = {
+	dispatch: () => {},
+	REDUCER_ACTIONS: REDUCER_ACTION_TYPE,
+	totalItems: 0,
+	totalPrice: '',
+	cart: [],
+}
+
+export const CartContext =
+	createContext<useCartContextType>(initCartContextState)
+
+type ChildrenType = { children?: ReactElement | ReactElement[] }
+
+export const CartProvider = ({ children }: ChildrenType): ReactElement => {
+	return (
+		<CartContext.Provider value={useCartContext(initCartState)}>
+			{children}
+		</CartContext.Provider>
+	)
+}
+
+export default CartContext
