@@ -61,7 +61,7 @@ const reducer = (
 			const { sku } = action.payload
 			console.log(action.payload)
 			const filteredCart: CartItemType[] | undefined = state.cart.filter(
-				item => item.sku === sku
+				item => item.sku !== sku
 			)
 			return { ...state, cart: [...filteredCart] }
 		}
