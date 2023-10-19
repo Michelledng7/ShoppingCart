@@ -46,4 +46,20 @@ const Product = ({
 	return content
 }
 
-export default Product
+function areProductsEqual(
+	{ product: prevProduct, inCart: prevInCart }: PropsType,
+	{ product: nextProduct, inCart: nextInCart }: PropsType
+) {
+	return (
+		Object.keys(prevProduct).every(key => {
+			return (
+				prevProduct[key as keyof ProductType] ===
+				nextProduct[key as keyof ProductType]
+			)
+		}) && prevInCart === nextInCart
+	)
+}
+
+const MemoizedProduct = memo(Product, areProductsEqual)
+
+export default MemoizedProduct
